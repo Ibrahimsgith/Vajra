@@ -1,0 +1,40 @@
+
+import React from 'react';
+import { MOCK_PRODUCTS } from '../constants';
+import { ProductCard } from './ProductCard';
+import { Product } from '../types';
+
+interface NecklacesPageProps {
+  onAddToCart: (product: Product) => void;
+  onToggleWishlist: (productId: number) => void;
+  onViewProduct: (productId: number) => void;
+  wishlistItems: number[];
+}
+
+export const NecklacesPage: React.FC<NecklacesPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const necklaces = MOCK_PRODUCTS.filter(p => p.category === 'Necklaces');
+
+  return (
+    <div className="bg-white">
+      <div className="container mx-auto px-6 py-16 animate-fade-in">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-serif text-amber-900">Necklaces Collection</h1>
+          <p className="text-gray-600 mt-4 max-w-2xl mx-auto">Discover stunning necklaces that add a touch of sophistication to any look. From delicate pendants to bold statement pieces, each design is a work of art.</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {necklaces.map(product => (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onAddToCart={onAddToCart} 
+              onToggleWishlist={onToggleWishlist}
+              onViewProduct={onViewProduct}
+              isWishlisted={wishlistItems.includes(product.id)}
+            />
+          ))}
+          {necklaces.length === 0 && <p className="text-center col-span-full text-gray-500">No necklaces found in our collection yet.</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
