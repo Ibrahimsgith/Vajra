@@ -1,27 +1,34 @@
-
 import React from 'react';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 export const AboutUsPage: React.FC = () => {
+  const [ref, isVisible] = useScrollAnimation();
+
   return (
-    <div className="bg-white py-20 animate-fade-in">
+    <div className="bg-[#5c1f2b] py-20">
       <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-serif text-amber-900 mb-6">Our Story</h1>
-          <p className="text-lg text-gray-700 leading-relaxed mb-8">
-            VAJRA was born from a passion for timeless beauty and a deep respect for the art of jewelry making. Our name, meaning "diamond" and "thunderbolt" in Sanskrit, reflects our commitment to creating pieces of both unyielding strength and breathtaking brilliance.
-          </p>
-        </div>
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center mt-16">
-          <div className="rounded-lg overflow-hidden shadow-xl">
-            <img src="https://picsum.photos/seed/jewelry-artisan/600/700" alt="Craftsmanship" className="w-full h-full object-cover" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-serif text-amber-800 mb-4">The Art of Craftsmanship</h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              Each VAJRA creation is meticulously handcrafted by master artisans who have dedicated their lives to perfecting their craft. We source only the finest, ethically-sourced metals and gemstones, ensuring that every piece not only looks magnificent but also aligns with our values of responsibility and integrity.
+        <div 
+          ref={ref}
+          className={`max-w-4xl mx-auto text-center transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <h1 className="text-5xl font-serif text-white mb-6">Our Story</h1>
+          <div className="text-lg text-white/90 leading-relaxed mb-8 space-y-6">
+            <p>
+              Welcome to Vajra - where every piece is a whisper of heritage, a touch of elegance, and a token of love.
             </p>
-            <p className="text-gray-600 leading-relaxed">
-              From the initial sketch to the final polish, we pour our hearts into every detail. Our design philosophy blends classic elegance with a modern sensibility, resulting in jewelry that is both contemporary and timeless—designed to be worn, loved, and passed down through generations.
+            <p>
+              Vajra was born from a shared passion between three women - a mother and her daughters - who believe that jewellery is not just an accessory, but a story. A story of strength, beauty, and timeless grace. Together, we lovingly handpick every design, ensuring that what reaches you is not only aesthetically exquisite but also crafted with care and soul.
+            </p>
+            <p>
+              We know what it feels like to search for something just right that perfect piece that doesn't break the bank but still makes your heart skip a beat. That's why we bring you high-quality, antique-inspired jewellery at prices that are refreshingly low. We believe elegance shouldn't come at a premium - it should come from the heart.
+            </p>
+            <p>
+              Every jewellery in our collection is thoughtfully chosen to reflect grace in every detail. Whether you're dressing up for a wedding, a festival, or simply adorning your everyday beauty - Vajra is here to make you feel divine. From our hearts to your jewellery box this is not just a collection, it's a legacy of love.
+            </p>
+            <p className="italic">
+              With warmth,
+              <br />
+              The Vajra Women
             </p>
           </div>
         </div>

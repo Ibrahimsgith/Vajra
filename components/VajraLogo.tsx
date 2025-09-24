@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const VajraLogo: React.FC = () => {
@@ -5,7 +6,7 @@ export const VajraLogo: React.FC = () => {
     // which can become blurry when resized. This provides a more professional and high-quality look.
     return (
         <svg
-            className="h-8 w-auto text-amber-900" // Control size and color with Tailwind classes
+            className="h-8 w-auto text-white" // Control size and color with Tailwind classes
             viewBox="0 0 150 40" // Adjust viewBox to fit the text snugly
             xmlns="http://www.w3.org/2000/svg"
             aria-label="Vajra Logo"
@@ -13,9 +14,9 @@ export const VajraLogo: React.FC = () => {
             <text
                 x="0"
                 y="32"
-                fontFamily="Cormorant Garamond, serif" // Using the elegant brand font
+                fontFamily="Bodoni Moda, serif" // Using the elegant brand font
                 fontSize="40"
-                fontWeight="500"
+                fontWeight="400"
                 fill="currentColor" // Inherits color from parent element
             >
                 Vajra

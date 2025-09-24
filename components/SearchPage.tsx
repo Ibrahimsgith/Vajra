@@ -27,20 +27,20 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onAddToCart, onToggleWis
   }, [query]);
 
   return (
-    <div className="bg-white">
+    <div className="bg-[#5c1f2b]">
       <div className="container mx-auto px-6 py-16 animate-fade-in min-h-[60vh]">
         <div className="max-w-2xl mx-auto mb-12">
-          <h1 className="text-5xl font-serif text-amber-900 text-center">Search Our Collection</h1>
+          <h1 className="text-5xl font-serif text-white text-center">Search Our Collection</h1>
           <div className="relative mt-6">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search for rings, necklaces, and more..."
-              className="w-full pl-5 pr-12 py-4 text-lg border-2 border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-amber-700 focus:border-transparent transition-shadow"
+              className="w-full pl-5 pr-12 py-4 text-lg bg-white/5 border-2 border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-shadow text-white placeholder-white/50"
               autoFocus
             />
-            <SearchIcon className="absolute right-5 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
+            <SearchIcon className="absolute right-5 top-1/2 -translate-y-1/2 w-6 h-6 text-white/40" />
           </div>
         </div>
 
@@ -61,8 +61,8 @@ export const SearchPage: React.FC<SearchPageProps> = ({ onAddToCart, onToggleWis
               </div>
             ) : (
               <div className="text-center py-16">
-                <p className="text-gray-500 text-lg">No results found for "{query}".</p>
-                <p className="text-gray-500 mt-2">Try searching for another term.</p>
+                <p className="text-white/70 text-lg">No results found for "{query}".</p>
+                <p className="text-white/70 mt-2">Try searching for another term.</p>
               </div>
             )}
           </div>

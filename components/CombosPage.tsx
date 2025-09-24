@@ -1,19 +1,18 @@
-
 import React from 'react';
 import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
-interface RingsPageProps {
+interface CombosPageProps {
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const RingsPage: React.FC<RingsPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const rings = MOCK_PRODUCTS.filter(p => p.productType === 'Rings');
+export const CombosPage: React.FC<CombosPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const combos = MOCK_PRODUCTS.filter(p => p.category === 'Combos');
   const [headerRef, isHeaderVisible] = useScrollAnimation();
 
   return (
@@ -23,11 +22,11 @@ export const RingsPage: React.FC<RingsPageProps> = ({ onAddToCart, onToggleWishl
           ref={headerRef}
           className={`text-center mb-12 transition-opacity duration-1000 ${isHeaderVisible ? 'opacity-100' : 'opacity-0'}`}
         >
-          <h1 className="text-5xl font-serif text-white">Rings Collection</h1>
-          <p className="text-white/80 mt-4 max-w-2xl mx-auto">Explore our exquisite collection of handcrafted rings, perfect for every occasion. From dazzling solitaires to timeless wedding bands, find the piece that tells your story.</p>
+          <h1 className="text-5xl font-serif text-white">Curated Combos</h1>
+          <p className="text-white/80 mt-4 max-w-2xl mx-auto">Discover our thoughtfully paired jewelry sets, designed to create a harmonious and elegant look with effortless grace.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {rings.map(product => (
+          {combos.map(product => (
             <ProductCard 
               key={product.id} 
               product={product} 
@@ -37,7 +36,7 @@ export const RingsPage: React.FC<RingsPageProps> = ({ onAddToCart, onToggleWishl
               isWishlisted={wishlistItems.includes(product.id)}
             />
           ))}
-           {rings.length === 0 && <p className="text-center col-span-full text-white/70">No rings found in our collection yet.</p>}
+           {combos.length === 0 && <p className="text-center col-span-full text-white/70">No combos found in our collection yet.</p>}
         </div>
       </div>
     </div>

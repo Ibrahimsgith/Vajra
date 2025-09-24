@@ -3,6 +3,7 @@ export interface Product {
   id: number;
   name: string;
   category: string;
+  productType: 'Rings' | 'Chains' | 'Bracelets' | 'Earrings' | 'Anklets' | 'Antiques' | 'Combos';
   price: number;
   imageUrl: string;
   description: string;
@@ -37,4 +38,4 @@ export interface Order {
   total: number;
 }
 
-export type Page = 'home' | 'rings' | 'necklaces' | 'collections' | 'about' | 'wishlist' | 'cart' | 'profile' | 'search' | 'checkout' | 'orderConfirmation' | 'productDetail';
+export type Page = 'home' | 'about' | 'wishlist' | 'cart' | 'profile' | 'search' | 'checkout' | 'orderConfirmation' | 'productDetail' | 'guestLogin' | 'faq' | 'bestseller' | 'newarrivals' | 'combos' | 'gifting' | 'collections' | 'rings' | 'chains' | 'bracelets' | 'earrings' | 'anklets' | 'antiques';

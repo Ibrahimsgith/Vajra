@@ -39,14 +39,14 @@ export const StyleAdvisor: React.FC<StyleAdvisorProps> = ({ onClose }) => {
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 m-4 transform transition-all duration-300 relative"
+        className="bg-[#4a1922] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-8 m-4 transform transition-all duration-300 relative"
         onClick={e => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">&times;</button>
+        <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white">&times;</button>
         <div className="text-center">
-            <SparkleIcon className="w-10 h-10 mx-auto text-amber-800 mb-2" />
-          <h2 className="text-2xl font-bold font-serif text-amber-900">AI Style Advisor</h2>
-          <p className="text-gray-600 mt-2 mb-6">Describe an occasion, and I'll suggest the perfect piece of jewelry.</p>
+            <SparkleIcon className="w-10 h-10 mx-auto text-white mb-2" />
+          <h2 className="text-2xl font-bold font-serif text-white">AI Style Advisor</h2>
+          <p className="text-white/80 mt-2 mb-6">Describe an occasion, and I'll suggest the perfect piece of jewelry.</p>
         </div>
 
         <div className="space-y-4">
@@ -54,33 +54,33 @@ export const StyleAdvisor: React.FC<StyleAdvisorProps> = ({ onClose }) => {
             value={occasion}
             onChange={(e) => setOccasion(e.target.value)}
             placeholder="e.g., A summer wedding in the countryside..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-700 transition-shadow"
+            className="w-full p-3 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-white transition-shadow text-white placeholder-white/50"
             rows={3}
             disabled={isLoading}
           />
           <button
             onClick={handleGetAdvice}
-            className="w-full bg-amber-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-amber-900 transition-colors disabled:bg-gray-400 flex items-center justify-center"
+            className="w-full bg-white text-[#5c1f2b] font-bold py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors disabled:bg-gray-400 flex items-center justify-center"
             disabled={isLoading}
           >
             {isLoading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#5c1f2b]"></div>
             ) : (
               'Get Advice'
             )}
           </button>
         </div>
 
-        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+        {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
         
         {advice && (
-          <div className="mt-6 p-5 border-t border-gray-200 animate-fade-in">
-            <h3 className="text-lg font-semibold font-serif text-gray-800 mb-3">Your Personal Recommendation:</h3>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2 text-sm">
+          <div className="mt-6 p-5 border-t border-white/10 animate-fade-in">
+            <h3 className="text-lg font-semibold font-serif text-white mb-3">Your Personal Recommendation:</h3>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-2 text-sm text-white/90">
                 <p><strong>Jewelry Type:</strong> {advice.jewelryType}</p>
                 <p><strong>Metal:</strong> {advice.metal}</p>
                 <p><strong>Gemstone:</strong> {advice.gemstone}</p>
-                <p className="pt-2 italic text-gray-700">"{advice.styleDescription}"</p>
+                <p className="pt-2 italic text-white/80">"{advice.styleDescription}"</p>
             </div>
           </div>
         )}

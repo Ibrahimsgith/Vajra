@@ -1,13 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { StyleAdvisor } from './components/StyleAdvisor';
 import { SparkleIcon } from './components/icons/SparkleIcon';
 import { HomePage } from './components/HomePage';
-import { RingsPage } from './components/RingsPage';
-import { NecklacesPage } from './components/NecklacesPage';
-import { CollectionsPage } from './components/CollectionsPage';
 import { AboutUsPage } from './components/AboutUsPage';
 import { WishlistPage } from './components/WishlistPage';
 import { CartPage } from './components/CartPage';
@@ -16,8 +13,22 @@ import { SearchPage } from './components/SearchPage';
 import { CheckoutPage } from './components/CheckoutPage';
 import { OrderConfirmationPage } from './components/OrderConfirmationPage';
 import { ProductDetailPage } from './components/ProductDetailPage';
+import { GuestLoginPage } from './components/GuestLoginPage';
 import { Page, Product, CartItem, ShippingInfo, Order } from './types';
 import { MOCK_PRODUCTS } from './constants';
+import { FAQPage } from './components/FAQPage';
+import { BestsellerPage } from './components/BestsellerPage';
+import { NewArrivalsPage } from './components/NewArrivalsPage';
+import { CombosPage } from './components/CombosPage';
+import { GiftingPage } from './components/GiftingPage';
+import { RingsPage } from './components/RingsPage';
+import { ChainsPage } from './components/ChainsPage';
+import { BraceletsPage } from './components/BraceletsPage';
+import { EarringsPage } from './components/EarringsPage';
+import { AnkletsPage } from './components/AnkletsPage';
+import { AntiquesPage } from './components/AntiquesPage';
+import { CollectionsPage } from './components/CollectionsPage';
+
 
 const App: React.FC = () => {
   const [isAdvisorOpen, setIsAdvisorOpen] = useState(false);
@@ -26,7 +37,7 @@ const App: React.FC = () => {
   const [wishlistItems, setWishlistItems] = useState<number[]>([]); // Array of product IDs
   const [orderDetails, setOrderDetails] = useState<Order | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
-
+  const [isGuestLoggedIn, setIsGuestLoggedIn] = useState(false);
 
   const handleAddToCart = (productToAdd: Product) => {
     setCartItems(prevItems => {
@@ -94,9 +105,19 @@ const App: React.FC = () => {
   };
 
   const handleNavigate = (page: Page) => {
-    setCurrentPage(page);
+    if (page === 'profile' && !isGuestLoggedIn) {
+      setCurrentPage('guestLogin');
+    } else {
+      setCurrentPage(page);
+    }
     window.scrollTo(0, 0);
   }
+  
+  const handleLoginAsGuest = () => {
+    setIsGuestLoggedIn(true);
+    setCurrentPage('profile');
+    window.scrollTo(0, 0);
+  };
 
   const wishlistedProducts = MOCK_PRODUCTS.filter(p => wishlistItems.includes(p.id));
   const selectedProduct = MOCK_PRODUCTS.find(p => p.id === selectedProductId);
@@ -110,14 +131,32 @@ const App: React.FC = () => {
     };
 
     switch (currentPage) {
+      case 'bestseller':
+        return <BestsellerPage {...pageProps} />;
+      case 'newarrivals':
+        return <NewArrivalsPage {...pageProps} />;
+      case 'combos':
+        return <CombosPage {...pageProps} />;
+      case 'gifting':
+        return <GiftingPage {...pageProps} />;
       case 'rings':
         return <RingsPage {...pageProps} />;
-      case 'necklaces':
-        return <NecklacesPage {...pageProps} />;
+      case 'chains':
+        return <ChainsPage {...pageProps} />;
+      case 'bracelets':
+        return <BraceletsPage {...pageProps} />;
+      case 'earrings':
+        return <EarringsPage {...pageProps} />;
+      case 'anklets':
+        return <AnkletsPage {...pageProps} />;
+      case 'antiques':
+        return <AntiquesPage {...pageProps} />;
       case 'collections':
         return <CollectionsPage {...pageProps} />;
       case 'about':
         return <AboutUsPage />;
+      case 'faq':
+        return <FAQPage />;
       case 'wishlist':
         return <WishlistPage products={wishlistedProducts} {...pageProps} />;
       case 'cart':
@@ -131,15 +170,17 @@ const App: React.FC = () => {
       case 'orderConfirmation':
         return <OrderConfirmationPage order={orderDetails} onNavigate={handleNavigate} />;
       case 'productDetail':
-        return selectedProduct ? <ProductDetailPage product={selectedProduct} {...pageProps} /> : <HomePage {...pageProps} />;
+        return selectedProduct ? <ProductDetailPage product={selectedProduct} {...pageProps} /> : <HomePage onNavigate={handleNavigate} />;
+      case 'guestLogin':
+        return <GuestLoginPage onGuestLogin={handleLoginAsGuest} />;
       case 'home':
       default:
-        return <HomePage {...pageProps} />;
+        return <HomePage onNavigate={handleNavigate} />;
     }
   };
 
   return (
-    <div className="bg-[#FDFBF8] text-gray-800 min-h-screen flex flex-col">
+    <div className="bg-[#5c1f2b] text-white min-h-screen flex flex-col">
       <Header 
         cartItemCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
         wishlistItemCount={wishlistItems.length}
@@ -149,16 +190,16 @@ const App: React.FC = () => {
       <main className="flex-grow">
         {renderPage()}
       </main>
-      <Footer />
+      <Footer onNavigate={handleNavigate} />
 
       {/* AI Style Advisor FAB */}
       <button
         onClick={() => setIsAdvisorOpen(true)}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-amber-900 to-amber-700 text-white p-4 rounded-full shadow-lg hover:scale-110 transform transition-transform duration-300 ease-in-out z-50 flex items-center gap-2"
+        className="fixed bottom-6 right-6 bg-[#4a1922] hover:bg-[#6b2a36] text-white p-4 rounded-full shadow-lg hover:scale-110 transform transition-all duration-300 ease-in-out z-50 flex items-center gap-2 border border-white/20"
         aria-label="Open AI Style Advisor"
       >
         <SparkleIcon className="w-6 h-6" />
-        <span className="hidden md:inline">AI Style Advisor</span>
+        <span className="hidden md:inline font-semibold">AI Style Advisor</span>
       </button>
 
       {isAdvisorOpen && <StyleAdvisor onClose={() => setIsAdvisorOpen(false)} />}
