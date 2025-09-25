@@ -1,18 +1,22 @@
 
+
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
+// FIX: Removed import from non-existent constants.ts file.
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 
 interface FeaturedProductsProps {
+  // FIX: Added products prop to receive data from parent.
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const featured = MOCK_PRODUCTS.slice(0, 4);
+export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  // FIX: Use products from props instead of mock data.
+  const featured = products.slice(0, 4);
 
   return (
     <section className="py-20 bg-white">

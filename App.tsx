@@ -15,22 +15,22 @@ import { OrderConfirmationPage } from './components/OrderConfirmationPage';
 import { ProductDetailPage } from './components/ProductDetailPage';
 import { GuestLoginPage } from './components/GuestLoginPage';
 import { Page, Product, CartItem, ShippingInfo, Order } from './types';
-import { MOCK_PRODUCTS } from './constants';
 import { FAQPage } from './components/FAQPage';
 import { BestsellerPage } from './components/BestsellerPage';
 import { NewArrivalsPage } from './components/NewArrivalsPage';
 import { CombosPage } from './components/CombosPage';
 import { GiftingPage } from './components/GiftingPage';
 import { RingsPage } from './components/RingsPage';
-import { ChainsPage } from './components/ChainsPage';
+import { NecklacesPage } from './components/NecklacesPage';
 import { BraceletsPage } from './components/BraceletsPage';
 import { EarringsPage } from './components/EarringsPage';
 import { AnkletsPage } from './components/AnkletsPage';
 import { AntiquesPage } from './components/AntiquesPage';
 import { CollectionsPage } from './components/CollectionsPage';
-
+import { productsData } from './constants';
 
 const App: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [isAdvisorOpen, setIsAdvisorOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -38,6 +38,21 @@ const App: React.FC = () => {
   const [orderDetails, setOrderDetails] = useState<Order | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [isGuestLoggedIn, setIsGuestLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Data is loaded from a local constant file, so no API call is needed.
+    // This is a synchronous operation.
+    try {
+      setProducts(productsData);
+    } catch(e) {
+      console.error("Failed to load products", e);
+      setError("Could not load product information. Please refresh the page.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const handleAddToCart = (productToAdd: Product) => {
     setCartItems(prevItems => {
@@ -79,17 +94,19 @@ const App: React.FC = () => {
   const handlePlaceOrder = (shippingInfo: ShippingInfo) => {
     if (cartItems.length === 0) return;
 
+    // Simulate order placement on the client-side
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const taxes = subtotal * 0.08;
-    const total = subtotal + taxes;
+    const shipping = subtotal > 500 ? 0 : 25;
+    const total = subtotal + taxes + shipping;
 
     const newOrder: Order = {
       orderNumber: `VAJRA-${Date.now()}`,
-      items: [...cartItems],
+      items: cartItems,
       shippingInfo,
-      total,
       subtotal,
       taxes,
+      total,
     };
 
     setOrderDetails(newOrder);
@@ -119,11 +136,12 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  const wishlistedProducts = MOCK_PRODUCTS.filter(p => wishlistItems.includes(p.id));
-  const selectedProduct = MOCK_PRODUCTS.find(p => p.id === selectedProductId);
+  const wishlistedProducts = products.filter(p => wishlistItems.includes(p.id));
+  const selectedProduct = products.find(p => p.id === selectedProductId);
 
   const renderPage = () => {
     const pageProps = {
+      products: products,
       onAddToCart: handleAddToCart,
       onToggleWishlist: handleToggleWishlist,
       wishlistItems: wishlistItems,
@@ -141,8 +159,8 @@ const App: React.FC = () => {
         return <GiftingPage {...pageProps} />;
       case 'rings':
         return <RingsPage {...pageProps} />;
-      case 'chains':
-        return <ChainsPage {...pageProps} />;
+      case 'necklaces':
+        return <NecklacesPage {...pageProps} />;
       case 'bracelets':
         return <BraceletsPage {...pageProps} />;
       case 'earrings':
@@ -178,6 +196,22 @@ const App: React.FC = () => {
         return <HomePage onNavigate={handleNavigate} />;
     }
   };
+  
+  if (isLoading) {
+    return (
+      <div className="bg-[#5c1f2b] text-white min-h-screen flex flex-col items-center justify-center">
+        <div className="text-2xl font-serif">Loading, please wait...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-[#5c1f2b] text-red-400 min-h-screen flex flex-col items-center justify-center">
+        <div className="text-2xl font-serif">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#5c1f2b] text-white min-h-screen flex flex-col">

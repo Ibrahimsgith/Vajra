@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { CartItem, Page, ShippingInfo } from '../types';
 import { CreditCardIcon } from './icons/CreditCardIcon';
+import { GooglePayIcon } from './icons/GooglePayIcon';
 
 interface CheckoutPageProps {
   cartItems: CartItem[];
@@ -89,9 +89,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onPlaceOr
                         <input type="radio" name="paymentMethod" value="creditCard" checked={paymentMethod === 'creditCard'} className="h-4 w-4 text-white focus:ring-white bg-transparent" onChange={() => {}}/>
                         <label className="ml-3 flex items-center text-sm font-medium text-white"><CreditCardIcon className="w-6 h-6 mr-2 text-white/80" /> Credit Card</label>
                     </div>
-                     <div onClick={() => setPaymentMethod('paypal')} className={`border rounded-lg p-4 flex items-center cursor-pointer ${paymentMethod === 'paypal' ? 'border-white ring-2 ring-white' : 'border-white/20'}`}>
-                        <input type="radio" name="paymentMethod" value="paypal" checked={paymentMethod === 'paypal'} className="h-4 w-4 text-white focus:ring-white bg-transparent" onChange={() => {}}/>
-                        <label className="ml-3 text-sm font-medium text-white">PayPal</label>
+                     <div onClick={() => setPaymentMethod('googlePay')} className={`border rounded-lg p-4 flex items-center cursor-pointer ${paymentMethod === 'googlePay' ? 'border-white ring-2 ring-white' : 'border-white/20'}`}>
+                        <input type="radio" name="paymentMethod" value="googlePay" checked={paymentMethod === 'googlePay'} className="h-4 w-4 text-white focus:ring-white bg-transparent" onChange={() => {}}/>
+                        <label className="ml-3 flex items-center text-sm font-medium text-white"><GooglePayIcon className="w-auto h-5 mr-2" /> Google Pay</label>
                     </div>
                  </div>
               </div>

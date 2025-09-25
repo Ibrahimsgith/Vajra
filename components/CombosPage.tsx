@@ -1,18 +1,19 @@
+
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface CombosPageProps {
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const CombosPage: React.FC<CombosPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const combos = MOCK_PRODUCTS.filter(p => p.category === 'Combos');
+export const CombosPage: React.FC<CombosPageProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const combos = products.filter(p => p.category === 'Combos');
   const [headerRef, isHeaderVisible] = useScrollAnimation();
 
   return (

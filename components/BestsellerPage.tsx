@@ -1,18 +1,19 @@
+
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface BestsellerPageProps {
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const BestsellerPage: React.FC<BestsellerPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const bestsellers = MOCK_PRODUCTS.filter(p => p.category === 'Bestseller');
+export const BestsellerPage: React.FC<BestsellerPageProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const bestsellers = products.filter(p => p.category === 'Bestseller');
   const [headerRef, isHeaderVisible] = useScrollAnimation();
 
   return (

@@ -1,18 +1,19 @@
+
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface GiftingPageProps {
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const GiftingPage: React.FC<GiftingPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const gifting = MOCK_PRODUCTS.filter(p => p.category === 'Gifting');
+export const GiftingPage: React.FC<GiftingPageProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const gifting = products.filter(p => p.category === 'Gifting');
   const [headerRef, isHeaderVisible] = useScrollAnimation();
 
   return (

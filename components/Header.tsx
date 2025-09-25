@@ -28,10 +28,10 @@ export const Header: React.FC<HeaderProps> = ({ cartItemCount, wishlistItemCount
   };
 
   return (
-    <header className="sticky top-0 bg-[#5c1f2b]/90 backdrop-blur-md z-50 border-b border-white/10">
+    <header className="sticky top-0 bg-[#4a1922] z-50 border-b border-white/10">
       <div className="container mx-auto px-6 py-4">
         <div className="flex flex-col items-center text-center">
-          <a href="#home" onClick={(e) => handleNavClick(e, 'home')} className="text-4xl font-logo text-white mb-4 md:mb-2">
+          <a href="#home" onClick={(e) => handleNavClick(e, 'home')} className="text-4xl font-logo text-white" style={{ marginBottom: '1.5cm' }}>
             VajरA
           </a>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:space-x-8 text-sm font-medium tracking-wide">

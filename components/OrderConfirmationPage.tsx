@@ -2,6 +2,10 @@
 import React from 'react';
 import { Order, Page } from '../types';
 import { CheckCircleIcon } from './icons/CheckCircleIcon';
+import { DownloadIcon } from './icons/DownloadIcon';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 
 interface OrderConfirmationPageProps {
   order: Order | null;
@@ -9,6 +13,30 @@ interface OrderConfirmationPageProps {
 }
 
 export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({ order, onNavigate }) => {
+  const handleDownloadPdf = () => {
+    const input = document.getElementById('invoice-content');
+    if (!input || !order) {
+        console.error("Could not find element to print or order details are missing.");
+        return;
+    }
+
+    html2canvas(input, {
+      backgroundColor: '#4a1922', // Match the component background
+      scale: 2, // Improve resolution
+      useCORS: true,
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      // Use px as unit, and match the format to the canvas size
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`Vajra-Invoice-${order.orderNumber}.pdf`);
+    });
+  };
+
   if (!order) {
     return (
       <div className="bg-[#5c1f2b] py-20 text-center">
@@ -32,7 +60,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({ or
           <p className="text-lg font-semibold mt-2">Order Number: <span className="text-white">{orderNumber}</span></p>
         </div>
 
-        <div className="bg-[#4a1922] border border-white/10 rounded-lg shadow-sm p-8">
+        <div id="invoice-content" className="bg-[#4a1922] border border-white/10 rounded-lg shadow-sm p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <h2 className="text-xl font-serif text-white border-b border-white/10 pb-3 mb-4">Order Summary</h2>
@@ -66,9 +94,16 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({ or
             </div>
         </div>
 
-         <div className="text-center mt-12">
-            <button onClick={() => onNavigate('collections')} className="bg-white text-[#5c1f2b] font-bold py-3 px-8 rounded-lg hover:bg-gray-200 transition-colors">
-            Continue Shopping
+         <div className="text-center mt-12 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <button onClick={() => onNavigate('collections')} className="bg-white text-[#5c1f2b] font-bold py-3 px-8 rounded-lg hover:bg-gray-200 transition-colors w-full sm:w-auto">
+                Continue Shopping
+            </button>
+            <button 
+                onClick={handleDownloadPdf}
+                className="bg-transparent border border-white/30 text-white font-bold py-3 px-8 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
+            >
+                <DownloadIcon className="w-5 h-5" />
+                <span>Download Invoice</span>
             </button>
         </div>
 

@@ -8,7 +8,9 @@ interface HomePageProps {
   onNavigate: (page: Page) => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
+export const HomePage: React.FC<HomePageProps> = ({ 
+  onNavigate,
+}) => {
   return (
     <>
       <Hero />

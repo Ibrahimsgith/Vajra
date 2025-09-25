@@ -1,23 +1,28 @@
 
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface AntiquesPageProps {
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const AntiquesPage: React.FC<AntiquesPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const antiques = MOCK_PRODUCTS.filter(p => p.productType === 'Antiques');
+export const AntiquesPage: React.FC<AntiquesPageProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const antiques = products.filter(p => p.productType === 'Antiques');
+  const [headerRef, isHeaderVisible] = useScrollAnimation();
 
   return (
     <div className="bg-[#5c1f2b]">
-      <div className="container mx-auto px-6 py-16 animate-fade-in">
-        <div className="text-center mb-12">
+      <div className="container mx-auto px-6 py-16">
+        <div 
+          ref={headerRef}
+          className={`text-center mb-12 transition-opacity duration-1000 ${isHeaderVisible ? 'opacity-100' : 'opacity-0'}`}
+        >
           <h1 className="text-5xl font-serif text-white">Antiques Collection</h1>
           <p className="text-white/80 mt-4 max-w-2xl mx-auto">Discover one-of-a-kind antique pieces with a rich history and timeless beauty.</p>
         </div>

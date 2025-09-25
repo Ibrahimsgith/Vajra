@@ -1,19 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { HeartIcon } from './icons/HeartIcon';
 import { ShoppingCartIcon } from './icons/ShoppingCartIcon';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 
 interface ProductDetailPageProps {
   product: Product;
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
   const [mainImage, setMainImage] = useState(product.galleryImageUrls[0] || product.imageUrl);
   const isWishlisted = wishlistItems.includes(product.id);
 
@@ -24,7 +25,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ product, o
   }, [product]);
 
 
-  const relatedProducts = MOCK_PRODUCTS.filter(
+  const relatedProducts = products.filter(
     p => p.category === product.category && p.id !== product.id
   ).slice(0, 4);
 

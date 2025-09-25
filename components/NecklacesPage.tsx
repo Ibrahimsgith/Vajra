@@ -1,18 +1,17 @@
-
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 
 interface NecklacesPageProps {
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const NecklacesPage: React.FC<NecklacesPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const necklaces = MOCK_PRODUCTS.filter(p => p.category === 'Necklaces');
+export const NecklacesPage: React.FC<NecklacesPageProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const necklaces = products.filter(p => p.productType === 'Chains');
 
   return (
     <div className="bg-[#5c1f2b]">

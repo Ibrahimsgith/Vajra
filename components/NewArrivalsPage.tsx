@@ -1,18 +1,19 @@
+
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface NewArrivalsPageProps {
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const NewArrivalsPage: React.FC<NewArrivalsPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const newArrivals = MOCK_PRODUCTS.filter(p => p.category === 'New Arrivals');
+export const NewArrivalsPage: React.FC<NewArrivalsPageProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const newArrivals = products.filter(p => p.category === 'New Arrivals');
   const [headerRef, isHeaderVisible] = useScrollAnimation();
 
   return (

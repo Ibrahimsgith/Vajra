@@ -1,18 +1,18 @@
 
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 
 interface AnkletsPageProps {
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const AnkletsPage: React.FC<AnkletsPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const anklets = MOCK_PRODUCTS.filter(p => p.productType === 'Anklets');
+export const AnkletsPage: React.FC<AnkletsPageProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const anklets = products.filter(p => p.productType === 'Anklets');
 
   return (
     <div className="bg-[#5c1f2b]">

@@ -1,19 +1,19 @@
 
 import React from 'react';
-import { MOCK_PRODUCTS } from '../constants';
 import { ProductCard } from './ProductCard';
 import { Product } from '../types';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface RingsPageProps {
+  products: Product[];
   onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: number) => void;
   onViewProduct: (productId: number) => void;
   wishlistItems: number[];
 }
 
-export const RingsPage: React.FC<RingsPageProps> = ({ onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
-  const rings = MOCK_PRODUCTS.filter(p => p.productType === 'Rings');
+export const RingsPage: React.FC<RingsPageProps> = ({ products, onAddToCart, onToggleWishlist, onViewProduct, wishlistItems }) => {
+  const rings = products.filter(p => p.productType === 'Rings');
   const [headerRef, isHeaderVisible] = useScrollAnimation();
 
   return (

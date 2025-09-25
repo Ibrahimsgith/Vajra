@@ -1,4 +1,3 @@
-
 export interface Product {
   id: number;
   name: string;
@@ -38,4 +37,4 @@ export interface Order {
   total: number;
 }
 
-export type Page = 'home' | 'about' | 'wishlist' | 'cart' | 'profile' | 'search' | 'checkout' | 'orderConfirmation' | 'productDetail' | 'guestLogin' | 'faq' | 'bestseller' | 'newarrivals' | 'combos' | 'gifting' | 'collections' | 'rings' | 'chains' | 'bracelets' | 'earrings' | 'anklets' | 'antiques';
+export type Page = 'home' | 'about' | 'wishlist' | 'cart' | 'profile' | 'search' | 'checkout' | 'orderConfirmation' | 'productDetail' | 'guestLogin' | 'faq' | 'bestseller' | 'newarrivals' | 'combos' | 'gifting' | 'collections' | 'rings' | 'necklaces' | 'bracelets' | 'earrings' | 'anklets' | 'antiques';

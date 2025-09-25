@@ -7,8 +7,10 @@ interface CategoryBannerProps {
 }
 
 const categories = [
-  { name: 'Chains', imageUrl: 'https://raw.githubusercontent.com/Ibrahimsgith/Vajra/main/Chain.png', page: 'chains' as Page },
+  { name: 'Anklets', imageUrl: 'https://images.unsplash.com/photo-1592817835942-e98493175de2?q=80&w=800', page: 'anklets' as Page },
+  { name: 'Antiques', imageUrl: 'https://images.unsplash.com/photo-1615952132149-62383307d838?q=80&w=800', page: 'antiques' as Page },
   { name: 'Bracelets', imageUrl: 'https://raw.githubusercontent.com/Ibrahimsgith/Vajra/main/Bracelet.png', page: 'bracelets' as Page },
+  { name: 'Necklaces', imageUrl: 'https://raw.githubusercontent.com/Ibrahimsgith/Vajra/main/Chain.png', page: 'necklaces' as Page },
   { name: 'Earrings', imageUrl: 'https://raw.githubusercontent.com/Ibrahimsgith/Vajra/main/Earrings.png', page: 'earrings' as Page },
   { name: 'Rings', imageUrl: 'https://raw.githubusercontent.com/Ibrahimsgith/Vajra/main/Ring.png', page: 'rings' as Page },
 ];
@@ -20,15 +22,15 @@ const AnimatedCategoryItem: React.FC<{ category: typeof categories[0]; onNavigat
     <div
       ref={ref}
       key={category.name}
-      className={`group relative h-96 overflow-hidden rounded-lg shadow-md cursor-pointer transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
+      className={`group relative h-52 overflow-hidden rounded-lg shadow-md cursor-pointer transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
       style={{ transitionDelay: `${index * 100}ms` }}
       onClick={() => onNavigate(category.page)}
     >
       <img src={category.imageUrl} alt={category.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-      <div className="absolute bottom-0 left-0 p-6">
-        <h3 className="text-2xl font-serif text-white">{category.name}</h3>
-        <div className="text-white font-semibold text-sm mt-2 inline-block border-b border-transparent group-hover:border-white transition-all">
+      <div className="absolute bottom-0 left-0 p-4">
+        <h3 className="text-xl font-serif text-white">{category.name}</h3>
+        <div className="text-white font-semibold text-xs mt-1 inline-block border-b border-transparent group-hover:border-white transition-all">
           Shop Now &rarr;
         </div>
       </div>
@@ -46,7 +48,7 @@ export const CategoryBanner: React.FC<CategoryBannerProps> = ({ onNavigate }) =>
           <h2 className="text-4xl font-serif text-white">Shop by Category</h2>
           <p className="text-white/80 mt-2">Find your next treasure in our curated collections.</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {categories.map((category, index) => (
             <AnimatedCategoryItem key={category.name} category={category} onNavigate={onNavigate} index={index} />
           ))}
