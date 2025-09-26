@@ -1,66 +1,20 @@
 
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
+import knex from 'knex';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Product, CartItem, ShippingInfo, Order } from '../types';
-import { fileURLToPath } from 'url';
 
-// Define the structure of our database file
-interface Schema {
-  products: Product[];
-  orders: Order[];
-}
-
-// FIX: Define __dirname for ES modules compatibility, as it's not available by default.
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Path to the database file
-const dbPath = path.resolve(__dirname, 'db.json');
-
-// Helper function to read the database
-const readDb = (): Schema => {
-  try {
-    // Check if the file exists before trying to read
-    if (!fs.existsSync(dbPath)) {
-        // If not, create it with default data
-        const defaultData: Schema = { products: [], orders: [] };
-        fs.writeFileSync(dbPath, JSON.stringify(defaultData, null, 2), 'utf-8');
-        return defaultData;
-    }
-    const fileContent = fs.readFileSync(dbPath, 'utf-8');
-    // Handle case where file is empty
-    if (fileContent.trim() === '') {
-        return { products: [], orders: [] };
-    }
-    return JSON.parse(fileContent) as Schema;
-  } catch (error) {
-    console.error("Could not read or parse db.json, returning default data.", error);
-    return { products: [], orders: [] };
-  }
-};
-
-// Helper function to write to the database
-const writeDb = async (data: Schema): Promise<void> => {
-  try {
-    await fs.promises.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (error) {
-    console.error("Failed to write to db.json", error);
-  }
-};
+// Initialize Knex to connect to your PostgreSQL database
+const db = knex({
+  client: 'pg',
+  connection: process.env.DATABASE_URL, // Use an environment variable for the connection string
+});
 
 // Main async function to start the server
 const startServer = async () => {
-  // Initialize DB by reading it. This also creates it if it doesn't exist.
-  readDb();
-
   // Setup Express app
   const app = express();
-  // FIX: The `app.use()` function can have trouble with TypeScript's overload resolution
-  // when multiple middleware functions are passed at once. Registering each middleware
-  // in a separate `app.use()` call resolves this.
   app.use(cors());
   app.use(express.json());
 
@@ -69,9 +23,14 @@ const startServer = async () => {
   // --- API Endpoints ---
 
   // GET /api/products - Fetches all products
-  app.get('/api/products', (req, res) => {
-    const currentDb = readDb();
-    res.json(currentDb.products);
+  app.get('/api/products', async (req, res) => {
+    try {
+      const products = await db('products').select('*');
+      res.json(products);
+    } catch (error) {
+      console.error("Failed to fetch products from database", error);
+      res.status(500).json({ error: 'Failed to fetch products' });
+    }
   });
 
   // POST /api/orders - Creates a new order
@@ -82,28 +41,40 @@ const startServer = async () => {
       return res.status(400).json({ error: 'Missing shipping information or cart items.' });
     }
     
-    // Server-side calculation for security
     const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const taxes = subtotal * 0.08;
     const shipping = subtotal > 500 ? 0 : 25;
     const total = subtotal + taxes + shipping;
 
-    const newOrder: Order = {
-      orderNumber: `VAJRA-${Date.now()}`,
-      items,
-      shippingInfo,
-      subtotal,
-      taxes,
-      total,
-    };
-    
-    const currentDb = readDb();
-    currentDb.orders.push(newOrder);
-    await writeDb(currentDb);
-    
-    res.status(201).json(newOrder);
-  });
+    try {
+      await db.transaction(async (trx) => {
+        const [newOrder] = await trx('orders').insert({
+          orderNumber: `VAJRA-${Date.now()}`,
+          fullName: shippingInfo.fullName,
+          address: shippingInfo.address,
+          city: shippingInfo.city,
+          zipCode: shippingInfo.zipCode,
+          country: shippingInfo.country,
+          subtotal,
+          taxes,
+          total,
+        }).returning('*');
 
+        const orderItems = items.map(item => ({
+          order_id: newOrder.id,
+          product_id: item.id,
+          quantity: item.quantity,
+        }));
+
+        await trx('order_items').insert(orderItems);
+
+        res.status(201).json(newOrder);
+      });
+    } catch (error) {
+      console.error("Failed to save order to database", error);
+      res.status(500).json({ error: 'Failed to create order' });
+    }
+  });
 
   // POST /api/style-advice - Securely fetches advice from Gemini API
   app.post('/api/style-advice', async (req, res) => {
@@ -147,7 +118,6 @@ const startServer = async () => {
           res.status(500).json({ error: 'Failed to get style advice from the AI.' });
       }
   });
-
 
   // Start server
   app.listen(PORT, () => {
