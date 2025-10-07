@@ -1,0 +1,32 @@
+[
+  {
+    "id": 101,
+    "name": "The Celestial Ring",
+    "price": 850.00,
+    "category": "rings",
+    "image": "/images/ring1.jpg",
+    "description": "A stunning ring featuring a central sapphire surrounded by micro-pave diamonds.",
+    "isBestSeller": true
+  },
+  
+  {
+    "id": 102,
+    "name": "Rose Gold Bangle",
+    "price": 520.00,
+    "category": "bracelets",
+    "image": "/images/bracelet1.jpg",
+    "description": "Elegant rose gold bangle, perfect for layering.",
+    "isBestSeller": false
+  },
+  
+  {
+    "id": 103,
+    "name": "Diamond Drop Earrings",
+    "price": 1200.00,
+    "category": "earrings",
+    "image": "/images/earring1.jpg",
+    "description": "Classic diamond drop earrings for any formal occasion.",
+    "isBestSeller": true
+  }
+  
+  ]
