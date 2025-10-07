@@ -21,11 +21,15 @@ export interface StyleAdvice {
 }
 
 export interface ShippingInfo {
-  fullName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
   address: string;
   city: string;
   zipCode: string;
   country: string;
+  fullName?: string; // Legacy support for any existing orders persisted with a fullName field
 }
 
 export interface Order {
@@ -35,6 +39,9 @@ export interface Order {
   subtotal: number;
   taxes: number;
   total: number;
+  shipping?: number;
+  paymentMethod?: string;
+  createdAt?: string;
 }
 
 export type Page = 'home' | 'about' | 'wishlist' | 'cart' | 'profile' | 'search' | 'checkout' | 'orderConfirmation' | 'productDetail' | 'guestLogin' | 'faq' | 'bestseller' | 'newarrivals' | 'combos' | 'gifting' | 'collections' | 'rings' | 'necklaces' | 'bracelets' | 'earrings' | 'anklets' | 'antiques';
