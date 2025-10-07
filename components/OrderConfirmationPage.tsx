@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Order, Page } from '../types';
 import { CheckCircleIcon } from './icons/CheckCircleIcon';
@@ -48,7 +47,21 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({ or
     );
   }
 
-  const { orderNumber, items, shippingInfo, subtotal, taxes, total } = order;
+  const { orderNumber, items, shippingInfo, subtotal, taxes, total, paymentMethod, shipping } = order;
+  const customerName = shippingInfo.fullName && shippingInfo.fullName.trim().length > 0
+    ? shippingInfo.fullName
+    : `${shippingInfo.firstName} ${shippingInfo.lastName}`.trim();
+  const shippingCost = typeof shipping === 'number' ? shipping : Math.max(total - subtotal - taxes, 0);
+  const formatPaymentMethod = (method: string) => {
+    switch (method) {
+      case 'googlePay':
+        return 'Google Pay';
+      case 'creditCard':
+        return 'Credit Card';
+      default:
+        return method.replace(/([A-Z])/g, ' $1').trim();
+    }
+  };
 
   return (
     <div className="bg-[#5c1f2b] py-20 animate-fade-in">
@@ -78,6 +91,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({ or
                     </div>
                      <div className="space-y-2 border-t border-white/10 pt-4 mt-4 text-sm">
                         <div className="flex justify-between"><span>Subtotal</span><span>${subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+                        <div className="flex justify-between text-white/70"><span>Shipping</span><span>{shippingCost === 0 ? 'Free' : `$${shippingCost.toLocaleString(undefined, {minimumFractionDigits: 2})}`}</span></div>
                         <div className="flex justify-between text-white/70"><span>Taxes</span><span>${taxes.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
                         <div className="flex justify-between font-bold text-base border-t border-white/10 pt-2 mt-2"><span>Total</span><span>${total.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
                     </div>
@@ -85,10 +99,15 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({ or
                  <div>
                     <h2 className="text-xl font-serif text-white border-b border-white/10 pb-3 mb-4">Shipping To</h2>
                     <div className="text-sm space-y-1 text-white/90">
-                        <p className="font-semibold">{shippingInfo.fullName}</p>
+                        <p className="font-semibold">{customerName}</p>
                         <p>{shippingInfo.address}</p>
                         <p>{shippingInfo.city}, {shippingInfo.zipCode}</p>
                         <p>{shippingInfo.country}</p>
+                        <p className="pt-2 text-white/70">Email: <span className="text-white/90">{shippingInfo.email}</span></p>
+                        <p className="text-white/70">Phone: <span className="text-white/90">{shippingInfo.phone}</span></p>
+                        {paymentMethod && (
+                          <p className="text-white/70">Payment Method: <span className="text-white/90">{formatPaymentMethod(paymentMethod)}</span></p>
+                        )}
                     </div>
                 </div>
             </div>

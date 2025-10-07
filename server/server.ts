@@ -35,12 +35,16 @@ const startServer = async () => {
 
   // POST /api/orders - Creates a new order
   app.post('/api/orders', async (req, res) => {
-    const { shippingInfo, items }: { shippingInfo: ShippingInfo, items: CartItem[] } = req.body;
+    const { shippingInfo, items, paymentMethod }: { shippingInfo: ShippingInfo, items: CartItem[], paymentMethod?: string } = req.body;
 
     if (!shippingInfo || !items || items.length === 0) {
       return res.status(400).json({ error: 'Missing shipping information or cart items.' });
     }
-    
+
+    const fullName = shippingInfo.fullName && shippingInfo.fullName.trim().length > 0
+      ? shippingInfo.fullName
+      : `${shippingInfo.firstName} ${shippingInfo.lastName}`.trim();
+
     const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const taxes = subtotal * 0.08;
     const shipping = subtotal > 500 ? 0 : 25;
@@ -50,7 +54,7 @@ const startServer = async () => {
       await db.transaction(async (trx) => {
         const [newOrder] = await trx('orders').insert({
           orderNumber: `VAJRA-${Date.now()}`,
-          fullName: shippingInfo.fullName,
+          fullName,
           address: shippingInfo.address,
           city: shippingInfo.city,
           zipCode: shippingInfo.zipCode,
@@ -68,7 +72,18 @@ const startServer = async () => {
 
         await trx('order_items').insert(orderItems);
 
-        res.status(201).json(newOrder);
+        res.status(201).json({
+          ...newOrder,
+          shippingInfo: {
+            ...shippingInfo,
+            fullName,
+          },
+          items,
+          paymentMethod,
+          subtotal,
+          taxes,
+          total,
+        });
       });
     } catch (error) {
       console.error("Failed to save order to database", error);

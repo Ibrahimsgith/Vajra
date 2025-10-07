@@ -28,6 +28,7 @@ import { AnkletsPage } from './components/AnkletsPage';
 import { AntiquesPage } from './components/AntiquesPage';
 import { CollectionsPage } from './components/CollectionsPage';
 import { productsData } from './constants';
+import { createOrder } from './services/orderService';
 
 const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -91,28 +92,25 @@ const App: React.FC = () => {
     });
   };
   
-  const handlePlaceOrder = (shippingInfo: ShippingInfo) => {
-    if (cartItems.length === 0) return;
+  const handlePlaceOrder = async (shippingInfo: ShippingInfo, paymentMethod: string) => {
+    if (cartItems.length === 0) {
+      throw new Error('Your cart is empty.');
+    }
 
-    // Simulate order placement on the client-side
-    const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const taxes = subtotal * 0.08;
-    const shipping = subtotal > 500 ? 0 : 25;
-    const total = subtotal + taxes + shipping;
-
-    const newOrder: Order = {
-      orderNumber: `VAJRA-${Date.now()}`,
-      items: cartItems,
-      shippingInfo,
-      subtotal,
-      taxes,
-      total,
-    };
-
-    setOrderDetails(newOrder);
-    setCartItems([]);
-    setCurrentPage('orderConfirmation');
-    window.scrollTo(0, 0);
+    try {
+      const shippingPayload: ShippingInfo = {
+        ...shippingInfo,
+        fullName: `${shippingInfo.firstName} ${shippingInfo.lastName}`.trim(),
+      };
+      const order = await createOrder(cartItems, shippingPayload, paymentMethod);
+      setOrderDetails(order);
+      setCartItems([]);
+      setCurrentPage('orderConfirmation');
+      window.scrollTo(0, 0);
+    } catch (error) {
+      console.error('Failed to place order with backend service.', error);
+      throw error;
+    }
   };
 
   const handleViewProduct = (productId: number) => {

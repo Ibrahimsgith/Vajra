@@ -6,50 +6,79 @@ const nodemailer = require('nodemailer');
 const { MongoClient, ObjectId } = require('mongodb'); // <-- NEW: MongoDB driver and ObjectId
 
 const app = express();
-const PORT = 3001; 
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
 
 // Middleware
 app.use(cors()); 
 app.use(express.json()); 
 
-// --- 1. DATABASE CONFIGURATION (REPLACE URI) ---
-// PASTE your full connection string here, replacing <db_password> manually.
-// DO NOT COMMIT YOUR REAL PASSWORD TO GIT! Use environment variables later.
-const uri ="mongodb+srv://ebrahimrafeeq_db_user:EJHp4LdhREYSjo2K@vajracluster.fp2zsjr.mongodb.net/?retryWrites=true&w=majority&appName=VajraCluster";
-const client = new MongoClient(uri);
+// --- 1. DATABASE CONFIGURATION ---
+// The MongoDB connection string must be supplied via the MONGODB_URI environment variable.
+const mongoUri = process.env.MONGODB_URI;
+
+if (!mongoUri) {
+    console.error('MONGODB_URI environment variable is not set. Unable to establish database connection.');
+    process.exit(1);
+}
+
+const client = new MongoClient(mongoUri);
 
 // Global variables for the database connection
-let db; 
-const DB_NAME = "vajra_db"; 
+let db;
+const DB_NAME = process.env.MONGODB_DB_NAME || "vajra_db";
 const PRODUCTS_COLLECTION = "products";
 const ORDERS_COLLECTION = "orders";
 
 // --- CONNECTION FUNCTION ---
 async function connectToDb() {
+    if (db) {
+        return db;
+    }
+
     try {
         await client.connect();
         db = client.db(DB_NAME);
-        console.log("Connected successfully to MongoDB Atlas.");
+        console.log(`Connected successfully to MongoDB database "${DB_NAME}".`);
+        return db;
     } catch (e) {
         console.error("Failed to connect to MongoDB! Check URI, User, and Network Access in Atlas.", e);
-        process.exit(1); 
+        throw e;
     }
 }
-connectToDb(); // Start connection attempt
+
+async function startServer() {
+    try {
+        await connectToDb();
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error("Unable to start server because the database connection failed.", error);
+        process.exit(1);
+    }
+}
+
+startServer();
 
 
 // --- 2. EMAIL TRANSPORTER CONFIGURATION (Your Gmail Setup) ---
 // Make sure you have substituted the App Password in the 'pass' field!
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465, 
-    secure: true, 
-    auth: {
-        user: 'ebrahimrafeeq@gmail.com', 
-        pass: 'pgoyhgxxdssdzpom' 
-    }
-});
-const RECEIVER_EMAIL = 'ebrahimrafeeq@gmail.com'; 
+const emailUser = process.env.EMAIL_USER || 'ebrahimrafeeq@gmail.com';
+const emailPass = process.env.EMAIL_PASS || 'pgoyhgxxdssdzpom';
+const RECEIVER_EMAIL = process.env.RECEIVER_EMAIL || emailUser;
+
+const isEmailConfigured = Boolean(emailUser && emailPass && RECEIVER_EMAIL);
+const transporter = isEmailConfigured
+    ? nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+            user: emailUser,
+            pass: emailPass,
+        },
+    })
+    : null;
 
 // ... (createOrderEmailHtml function remains the same) ...
 function createOrderEmailHtml(order) {
@@ -78,7 +107,8 @@ function createOrderEmailHtml(order) {
         <p>Address: ${order.shippingInfo.address}, ${order.shippingInfo.city}, ${order.shippingInfo.zipCode}</p>
         <p>Email: ${order.shippingInfo.email}</p>
         <p>Phone: ${order.shippingInfo.phone}</p>
-        
+        <p>Payment Method: ${order.paymentMethod || 'Not provided'}</p>
+
         <p>Order Time: ${new Date(order.createdAt).toLocaleString()}</p>
     `;
 }
@@ -103,14 +133,20 @@ app.get('/api/products', async (req, res) => {
 
 
 // 2. POST /api/orders
-app.post('/api/orders', async (req, res) => { 
+app.post('/api/orders', async (req, res) => {
     if (!db) {
         return res.status(503).json({ message: "Database service unavailable." });
     }
-    const { cartItems, shippingInfo } = req.body;
+    const { cartItems, shippingInfo, paymentMethod } = req.body;
 
     if (!cartItems || cartItems.length === 0) {
         return res.status(400).json({ message: 'Cart is empty.' });
+    }
+
+    const requiredShippingFields = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zipCode', 'country'];
+    const missingField = requiredShippingFields.find(field => !shippingInfo?.[field]);
+    if (missingField) {
+        return res.status(400).json({ message: `Missing shipping field: ${missingField}.` });
     }
 
     // Order Calculation (Logic remains on backend)
@@ -125,34 +161,53 @@ app.post('/api/orders', async (req, res) => {
         shippingInfo,
         subtotal,
         taxes,
+        shipping,
         total,
-        createdAt: new Date().toISOString() 
+        paymentMethod,
+        createdAt: new Date().toISOString()
     };
     
     try {
         // SAVE ORDER to MongoDB
-        await db.collection(ORDERS_COLLECTION).insertOne(newOrder); 
+        const insertResult = await db.collection(ORDERS_COLLECTION).insertOne(newOrder);
+
+        if (!insertResult.acknowledged) {
+            throw new Error('Order was not acknowledged by MongoDB.');
+        }
+
         console.log(`Order saved to database: ${newOrder.orderNumber}`);
 
-        // SEND EMAIL NOTIFICATION (same as before)
-        const mailOptions = {
-            from: `"Vajra Jewels Orders" <ebrahimrafeeq@gmail.com>`, 
-            to: RECEIVER_EMAIL, 
-            subject: `NEW ORDER RECEIVED: #${newOrder.orderNumber}`, 
-            html: createOrderEmailHtml(newOrder), 
-        };
-        await transporter.sendMail(mailOptions);
-        console.log(`Email notification sent.`);
-        
-        res.status(201).json(newOrder); 
+        if (transporter) {
+            const mailOptions = {
+                from: `"Vajra Jewels Orders" <${emailUser}>`,
+                to: RECEIVER_EMAIL,
+                subject: `NEW ORDER RECEIVED: #${newOrder.orderNumber}`,
+                html: createOrderEmailHtml(newOrder),
+            };
+
+            transporter.sendMail(mailOptions).then(() => {
+                console.log(`Email notification sent.`);
+            }).catch((emailError) => {
+                console.error('Failed to send order notification email.', emailError);
+            });
+        }
+
+        res.status(201).json({
+            ...newOrder,
+            _id: insertResult.insertedId,
+        });
     } catch (e) {
         console.error("Error during order processing/saving:", e);
-        // Return 500 only if saving the order fails.
         res.status(500).json({ message: "Failed to finalize order. Internal error." });
     }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+process.on('SIGINT', async () => {
+    await client.close();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    await client.close();
+    process.exit(0);
 });

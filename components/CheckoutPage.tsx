@@ -5,19 +5,24 @@ import { GooglePayIcon } from './icons/GooglePayIcon';
 
 interface CheckoutPageProps {
   cartItems: CartItem[];
-  onPlaceOrder: (shippingInfo: ShippingInfo) => void;
+  onPlaceOrder: (shippingInfo: ShippingInfo, paymentMethod: string) => Promise<void>;
   onNavigate: (page: Page) => void;
 }
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onPlaceOrder, onNavigate }) => {
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
-    fullName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
     address: '',
     city: '',
     zipCode: '',
     country: '',
   });
   const [paymentMethod, setPaymentMethod] = useState('creditCard');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const taxes = subtotal * 0.08;
@@ -29,13 +34,24 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onPlaceOr
     setShippingInfo(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (Object.values(shippingInfo).some(field => field === '')) {
-      alert('Please fill out all shipping fields.');
+    setErrorMessage(null);
+
+    if (Object.values(shippingInfo).some(field => field.trim() === '')) {
+      setErrorMessage('Please fill out all contact and shipping fields before placing your order.');
       return;
     }
-    onPlaceOrder(shippingInfo);
+
+    setIsSubmitting(true);
+    try {
+      await onPlaceOrder(shippingInfo, paymentMethod);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to place order. Please try again.';
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   if (cartItems.length === 0) {
@@ -58,25 +74,109 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onPlaceOr
               <div className="mb-8">
                 <h2 className="text-2xl font-serif text-white border-b border-white/10 pb-3 mb-6">Shipping Information</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="sm:col-span-2">
-                    <label htmlFor="fullName" className="block text-sm font-medium text-white/80">Full Name</label>
-                    <input type="text" id="fullName" name="fullName" value={shippingInfo.fullName} onChange={handleInputChange} className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white" required />
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-white/80">First Name</label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      autoComplete="given-name"
+                      value={shippingInfo.firstName}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-white/80">Last Name</label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      autoComplete="family-name"
+                      value={shippingInfo.lastName}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-white/80">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      autoComplete="email"
+                      value={shippingInfo.email}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-white/80">Phone Number</label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      autoComplete="tel"
+                      value={shippingInfo.phone}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white"
+                      required
+                    />
                   </div>
                   <div className="sm:col-span-2">
                     <label htmlFor="address" className="block text-sm font-medium text-white/80">Address</label>
-                    <input type="text" id="address" name="address" value={shippingInfo.address} onChange={handleInputChange} className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white" required />
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      autoComplete="street-address"
+                      value={shippingInfo.address}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white"
+                      required
+                    />
                   </div>
                   <div>
                     <label htmlFor="city" className="block text-sm font-medium text-white/80">City</label>
-                    <input type="text" id="city" name="city" value={shippingInfo.city} onChange={handleInputChange} className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white" required />
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      autoComplete="address-level2"
+                      value={shippingInfo.city}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white"
+                      required
+                    />
                   </div>
                   <div>
                     <label htmlFor="zipCode" className="block text-sm font-medium text-white/80">Postal / ZIP Code</label>
-                    <input type="text" id="zipCode" name="zipCode" value={shippingInfo.zipCode} onChange={handleInputChange} className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white" required />
+                    <input
+                      type="text"
+                      id="zipCode"
+                      name="zipCode"
+                      autoComplete="postal-code"
+                      value={shippingInfo.zipCode}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white"
+                      required
+                    />
                   </div>
                   <div className="sm:col-span-2">
                      <label htmlFor="country" className="block text-sm font-medium text-white/80">Country</label>
-                    <input type="text" id="country" name="country" value={shippingInfo.country} onChange={handleInputChange} className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white" required />
+                    <input
+                      type="text"
+                      id="country"
+                      name="country"
+                      autoComplete="country-name"
+                      value={shippingInfo.country}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full bg-white/5 border-white/20 rounded-md shadow-sm focus:ring-white focus:border-white text-white"
+                      required
+                    />
                   </div>
                 </div>
               </div>
@@ -86,17 +186,22 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onPlaceOr
                  <h2 className="text-2xl font-serif text-white border-b border-white/10 pb-3 mb-6">Payment Method</h2>
                  <div className="space-y-4">
                     <div onClick={() => setPaymentMethod('creditCard')} className={`border rounded-lg p-4 flex items-center cursor-pointer ${paymentMethod === 'creditCard' ? 'border-white ring-2 ring-white' : 'border-white/20'}`}>
-                        <input type="radio" name="paymentMethod" value="creditCard" checked={paymentMethod === 'creditCard'} className="h-4 w-4 text-white focus:ring-white bg-transparent" onChange={() => {}}/>
+                    <input type="radio" name="paymentMethod" value="creditCard" checked={paymentMethod === 'creditCard'} className="h-4 w-4 text-white focus:ring-white bg-transparent" onChange={() => setPaymentMethod('creditCard')} />
                         <label className="ml-3 flex items-center text-sm font-medium text-white"><CreditCardIcon className="w-6 h-6 mr-2 text-white/80" /> Credit Card</label>
                     </div>
                      <div onClick={() => setPaymentMethod('googlePay')} className={`border rounded-lg p-4 flex items-center cursor-pointer ${paymentMethod === 'googlePay' ? 'border-white ring-2 ring-white' : 'border-white/20'}`}>
-                        <input type="radio" name="paymentMethod" value="googlePay" checked={paymentMethod === 'googlePay'} className="h-4 w-4 text-white focus:ring-white bg-transparent" onChange={() => {}}/>
+                        <input type="radio" name="paymentMethod" value="googlePay" checked={paymentMethod === 'googlePay'} className="h-4 w-4 text-white focus:ring-white bg-transparent" onChange={() => setPaymentMethod('googlePay')} />
                         <label className="ml-3 flex items-center text-sm font-medium text-white"><GooglePayIcon className="w-auto h-5 mr-2" /> Google Pay</label>
                     </div>
                  </div>
               </div>
-               <button type="submit" className="w-full bg-white text-[#5c1f2b] font-bold py-4 mt-8 rounded-lg hover:bg-gray-200 transition-colors text-lg">
-                Place Order
+              {errorMessage && (
+                <p className="mt-6 rounded-md border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200" role="alert">
+                  {errorMessage}
+                </p>
+              )}
+               <button type="submit" className="w-full bg-white text-[#5c1f2b] font-bold py-4 mt-8 rounded-lg hover:bg-gray-200 transition-colors text-lg disabled:cursor-not-allowed disabled:opacity-70" disabled={isSubmitting}>
+                {isSubmitting ? 'Processing Order...' : 'Place Order'}
               </button>
             </div>
 
