@@ -19,13 +19,25 @@ View your app in AI Studio: https://ai.studio/apps/drive/1f93sGxN6OehVzaIBgDRwFP
 3. Run the app:
    `npm run dev`
 
-## MongoDB configuration
+## Backend storage
 
-The backend can persist products and orders to MongoDB when the following environment variables are provided (typically via a `.env` file or your deployment platform):
+The API persists products and orders to JSON files located in `backend/data`. No database server is required for local development or deployment.
 
-- `MONGODB_URI` – Full MongoDB connection string. This is the easiest way to configure the datastore.
-- `MONGODB_DB` (optional) – Overrides the database name when using `MONGODB_URI`.
-- `MONGODB_HOST`, `MONGODB_PORT`, `MONGODB_USER`, `MONGODB_PASSWORD` (optional) – Use these to build a connection string when `MONGODB_URI` is not supplied.
-- `MONGODB_AUTH_SOURCE` (optional) – Authentication database name when using discrete connection parts.
+## Google Sheets order logging
 
-If none of these variables are set, the API automatically falls back to the filesystem-based JSON storage.
+The backend can optionally log each order to a Google Sheet for lightweight reporting. Configure the integration with the following environment variables:
+
+- `GOOGLE_SHEETS_ENABLED` – Set to `true` to enable the integration. When omitted or `false`, the API skips the Google Sheets call.
+- `GOOGLE_SHEETS_SHEET_ID` – The ID portion of the target Google Sheet URL (the string between `/d/` and `/edit`).
+- `GOOGLE_SHEETS_RANGE` (optional) – The range to append to. Defaults to `Orders!A:Z`.
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL` – Email address of the Google service account that has access to the sheet.
+- `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` – Private key for the service account. Copy the `private_key` value from the JSON key and replace literal newlines with `\n` when storing in environment variables.
+
+### Setup steps
+
+1. Create a Google Cloud project (or reuse an existing one) and enable the Google Sheets API.
+2. Generate a **service account** and create a JSON key. The file includes the email and private key required above.
+3. Share the destination Google Sheet with the service account's email address as an editor.
+4. Provide the environment variables to your deployment (for example via `.env` files or your hosting platform's secret manager).
+
+When enabled, the `/api/orders` endpoint appends a new row for each order. Any errors that occur while writing to Google Sheets are logged but do not block order placement.

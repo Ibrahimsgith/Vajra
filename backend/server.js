@@ -3,7 +3,7 @@ const cors = require('cors');
 const fs = require('fs/promises');
 const path = require('path');
 
-const db = require('./db');
+const googleSheets = require('./googleSheets');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
@@ -16,36 +16,6 @@ const ordersFilePath = path.join(__dirname, 'data', 'orders.json');
 
 let productsCache = null;
 let ordersCache = null;
-let mongoReady = false;
-let mongoInitPromise = null;
-
-if (db.isEnabled()) {
-  mongoInitPromise = db
-    .initializeDatabase()
-    .then(() => {
-      mongoReady = true;
-      console.log('MongoDB datastore initialised and ready.');
-    })
-    .catch((error) => {
-      console.warn('MongoDB datastore initialisation failed. Using filesystem fallback.', error);
-    });
-} else {
-  console.log('MongoDB datastore not configured. Using filesystem storage.');
-}
-
-async function ensureMongoReady() {
-  if (!mongoInitPromise) {
-    return mongoReady;
-  }
-
-  try {
-    await mongoInitPromise;
-    return mongoReady;
-  } catch (_error) {
-    return false;
-  }
-}
-
 function normalise(value) {
   if (value === undefined || value === null) {
     return '';
@@ -60,16 +30,6 @@ function slugify(value) {
 async function loadProducts() {
   if (productsCache) {
     return productsCache;
-  }
-
-  const mongoAvailable = await ensureMongoReady();
-  if (mongoAvailable) {
-    try {
-      productsCache = await db.getAllProducts();
-      return productsCache;
-    } catch (error) {
-      console.warn('Failed to load products from MongoDB. Falling back to filesystem storage.', error);
-    }
   }
 
   const fileContents = await fs.readFile(productsFilePath, 'utf8');
@@ -109,18 +69,6 @@ async function loadOrdersFromFile() {
 async function loadOrders({ forceFile = false } = {}) {
   if (!forceFile && ordersCache) {
     return ordersCache;
-  }
-
-  if (!forceFile) {
-    const mongoAvailable = await ensureMongoReady();
-    if (mongoAvailable) {
-      try {
-        ordersCache = await db.getAllOrders();
-        return ordersCache;
-      } catch (error) {
-        console.warn('Failed to load orders from MongoDB. Falling back to filesystem storage.', error);
-      }
-    }
   }
 
   return loadOrdersFromFile();
@@ -354,23 +302,14 @@ app.post('/api/orders', async (req, res, next) => {
       createdAt: new Date().toISOString(),
     };
 
-    let persistedToMongo = false;
-    const mongoAvailable = await ensureMongoReady();
+    const existingOrders = await loadOrders({ forceFile: true });
+    existingOrders.push(order);
+    await persistOrdersToFile(existingOrders);
 
-    if (mongoAvailable) {
-      try {
-        await db.insertOrder(order);
-        ordersCache = null;
-        persistedToMongo = true;
-      } catch (error) {
-        console.error('Failed to insert order into MongoDB. Falling back to filesystem storage.', error);
-      }
-    }
-
-    if (!persistedToMongo) {
-      const existingOrders = await loadOrders({ forceFile: true });
-      existingOrders.push(order);
-      await persistOrdersToFile(existingOrders);
+    try {
+      await googleSheets.appendOrder(order);
+    } catch (error) {
+      console.warn('Failed to append order to Google Sheets.', error);
     }
 
     res.status(201).json(order);
@@ -382,19 +321,6 @@ app.post('/api/orders', async (req, res, next) => {
 app.get('/api/orders/:orderNumber', async (req, res, next) => {
   try {
     const { orderNumber } = req.params;
-    const mongoAvailable = await ensureMongoReady();
-
-    if (mongoAvailable) {
-      try {
-        const order = await db.findOrder(orderNumber);
-        if (order) {
-          return res.json(order);
-        }
-      } catch (error) {
-        console.warn('Failed to retrieve order from MongoDB. Falling back to filesystem storage.', error);
-      }
-    }
-
     const orders = await loadOrders({ forceFile: true });
     const order = orders.find((entry) => entry.orderNumber === orderNumber);
 
