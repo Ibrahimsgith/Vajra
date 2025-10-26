@@ -3,6 +3,8 @@ const cors = require('cors');
 const fs = require('fs/promises');
 const path = require('path');
 
+const db = require('./db');
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 
@@ -14,6 +16,35 @@ const ordersFilePath = path.join(__dirname, 'data', 'orders.json');
 
 let productsCache = null;
 let ordersCache = null;
+let mongoReady = false;
+let mongoInitPromise = null;
+
+if (db.isEnabled()) {
+  mongoInitPromise = db
+    .initializeDatabase()
+    .then(() => {
+      mongoReady = true;
+      console.log('MongoDB datastore initialised and ready.');
+    })
+    .catch((error) => {
+      console.warn('MongoDB datastore initialisation failed. Using filesystem fallback.', error);
+    });
+} else {
+  console.log('MongoDB datastore not configured. Using filesystem storage.');
+}
+
+async function ensureMongoReady() {
+  if (!mongoInitPromise) {
+    return mongoReady;
+  }
+
+  try {
+    await mongoInitPromise;
+    return mongoReady;
+  } catch (_error) {
+    return false;
+  }
+}
 
 function normalise(value) {
   if (value === undefined || value === null) {
@@ -31,6 +62,16 @@ async function loadProducts() {
     return productsCache;
   }
 
+  const mongoAvailable = await ensureMongoReady();
+  if (mongoAvailable) {
+    try {
+      productsCache = await db.getAllProducts();
+      return productsCache;
+    } catch (error) {
+      console.warn('Failed to load products from MongoDB. Falling back to filesystem storage.', error);
+    }
+  }
+
   const fileContents = await fs.readFile(productsFilePath, 'utf8');
   const parsed = JSON.parse(fileContents);
 
@@ -42,11 +83,7 @@ async function loadProducts() {
   return productsCache;
 }
 
-async function loadOrders() {
-  if (ordersCache) {
-    return ordersCache;
-  }
-
+async function loadOrdersFromFile() {
   try {
     const fileContents = await fs.readFile(ordersFilePath, 'utf8');
     const parsed = JSON.parse(fileContents);
@@ -69,7 +106,27 @@ async function loadOrders() {
   return ordersCache;
 }
 
-async function persistOrders(orders) {
+async function loadOrders({ forceFile = false } = {}) {
+  if (!forceFile && ordersCache) {
+    return ordersCache;
+  }
+
+  if (!forceFile) {
+    const mongoAvailable = await ensureMongoReady();
+    if (mongoAvailable) {
+      try {
+        ordersCache = await db.getAllOrders();
+        return ordersCache;
+      } catch (error) {
+        console.warn('Failed to load orders from MongoDB. Falling back to filesystem storage.', error);
+      }
+    }
+  }
+
+  return loadOrdersFromFile();
+}
+
+async function persistOrdersToFile(orders) {
   ordersCache = orders;
   await fs.writeFile(ordersFilePath, JSON.stringify(ordersCache, null, 2));
 }
@@ -297,9 +354,24 @@ app.post('/api/orders', async (req, res, next) => {
       createdAt: new Date().toISOString(),
     };
 
-    const existingOrders = await loadOrders();
-    existingOrders.push(order);
-    await persistOrders(existingOrders);
+    let persistedToMongo = false;
+    const mongoAvailable = await ensureMongoReady();
+
+    if (mongoAvailable) {
+      try {
+        await db.insertOrder(order);
+        ordersCache = null;
+        persistedToMongo = true;
+      } catch (error) {
+        console.error('Failed to insert order into MongoDB. Falling back to filesystem storage.', error);
+      }
+    }
+
+    if (!persistedToMongo) {
+      const existingOrders = await loadOrders({ forceFile: true });
+      existingOrders.push(order);
+      await persistOrdersToFile(existingOrders);
+    }
 
     res.status(201).json(order);
   } catch (error) {
@@ -309,8 +381,21 @@ app.post('/api/orders', async (req, res, next) => {
 
 app.get('/api/orders/:orderNumber', async (req, res, next) => {
   try {
-    const orders = await loadOrders();
     const { orderNumber } = req.params;
+    const mongoAvailable = await ensureMongoReady();
+
+    if (mongoAvailable) {
+      try {
+        const order = await db.findOrder(orderNumber);
+        if (order) {
+          return res.json(order);
+        }
+      } catch (error) {
+        console.warn('Failed to retrieve order from MongoDB. Falling back to filesystem storage.', error);
+      }
+    }
+
+    const orders = await loadOrders({ forceFile: true });
     const order = orders.find((entry) => entry.orderNumber === orderNumber);
 
     if (!order) {
