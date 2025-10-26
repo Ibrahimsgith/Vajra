@@ -29,6 +29,7 @@ import { AntiquesPage } from './components/AntiquesPage';
 import { CollectionsPage } from './components/CollectionsPage';
 import { productsData } from './constants';
 import { createOrder } from './services/orderService';
+import { fetchProducts } from './services/productService';
 
 const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,16 +44,38 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Data is loaded from a local constant file, so no API call is needed.
-    // This is a synchronous operation.
-    try {
-      setProducts(productsData);
-    } catch(e) {
-      console.error("Failed to load products", e);
-      setError("Could not load product information. Please refresh the page.");
-    } finally {
-      setIsLoading(false);
-    }
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        const apiProducts = await fetchProducts();
+        if (!isMounted) {
+          return;
+        }
+        setProducts(apiProducts);
+      } catch (apiError) {
+        console.error('Failed to fetch product catalogue from backend. Falling back to local data.', apiError);
+        if (!isMounted) {
+          return;
+        }
+
+        if (productsData.length > 0) {
+          setProducts(productsData);
+        } else {
+          setError('Could not load product information. Please refresh the page.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleAddToCart = (productToAdd: Product) => {
