@@ -18,3 +18,14 @@ View your app in AI Studio: https://ai.studio/apps/drive/1f93sGxN6OehVzaIBgDRwFP
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## MongoDB configuration
+
+The backend can persist products and orders to MongoDB when the following environment variables are provided (typically via a `.env` file or your deployment platform):
+
+- `MONGODB_URI` – Full MongoDB connection string. This is the easiest way to configure the datastore.
+- `MONGODB_DB` (optional) – Overrides the database name when using `MONGODB_URI`.
+- `MONGODB_HOST`, `MONGODB_PORT`, `MONGODB_USER`, `MONGODB_PASSWORD` (optional) – Use these to build a connection string when `MONGODB_URI` is not supplied.
+- `MONGODB_AUTH_SOURCE` (optional) – Authentication database name when using discrete connection parts.
+
+If none of these variables are set, the API automatically falls back to the filesystem-based JSON storage.
