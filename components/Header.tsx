@@ -19,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ cartItemCount, wishlistItemCount
     { page: 'newarrivals', label: 'New Arrivals' },
     { page: 'combos', label: 'Combos' },
     { page: 'gifting', label: 'Gifting' },
+    { page: 'orders', label: 'Orders' },
     { page: 'about', label: 'About Us' },
   ];
   
