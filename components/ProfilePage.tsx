@@ -1,8 +1,17 @@
 
 import React from 'react';
 import { UserIcon } from './icons/UserIcon';
+import { UserProfile } from '../types';
 
-export const ProfilePage: React.FC = () => {
+interface ProfilePageProps {
+  userProfile: UserProfile | null;
+}
+
+export const ProfilePage: React.FC<ProfilePageProps> = ({ userProfile }) => {
+  const displayName = userProfile?.name?.trim() || 'Guest User';
+  const displayEmail = userProfile?.email?.trim() || 'guest@example.com';
+  const displayPhone = userProfile?.phone?.trim();
+
   return (
     <div className="bg-[#5c1f2b] py-20 animate-fade-in">
       <div className="container mx-auto px-6">
@@ -23,11 +32,15 @@ export const ProfilePage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-white/70">Name</label>
-                    <p className="font-semibold">Guest User</p>
+                    <p className="font-semibold">{displayName}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-white/70">Email</label>
-                    <p className="font-semibold">guest@example.com</p>
+                    <p className="font-semibold">{displayEmail}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-white/70">Phone</label>
+                    <p className="font-semibold">{displayPhone || 'Not provided'}</p>
                   </div>
                 </div>
                  <button className="text-white font-semibold hover:underline">Edit Details</button>

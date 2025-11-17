@@ -14,7 +14,7 @@ import { CheckoutPage } from './components/CheckoutPage';
 import { OrderConfirmationPage } from './components/OrderConfirmationPage';
 import { ProductDetailPage } from './components/ProductDetailPage';
 import { GuestLoginPage } from './components/GuestLoginPage';
-import { Page, Product, CartItem, ShippingInfo, Order } from './types';
+import { Page, Product, CartItem, ShippingInfo, Order, UserProfile } from './types';
 import { FAQPage } from './components/FAQPage';
 import { BestsellerPage } from './components/BestsellerPage';
 import { NewArrivalsPage } from './components/NewArrivalsPage';
@@ -42,6 +42,7 @@ const App: React.FC = () => {
   const [isGuestLoggedIn, setIsGuestLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -151,7 +152,8 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   }
   
-  const handleLoginAsGuest = () => {
+  const handleLoginAsGuest = (profile: UserProfile) => {
+    setUserProfile(profile);
     setIsGuestLoggedIn(true);
     setCurrentPage('profile');
     window.scrollTo(0, 0);
@@ -201,7 +203,7 @@ const App: React.FC = () => {
       case 'cart':
         return <CartPage cartItems={cartItems} onUpdateQuantity={handleUpdateCartQuantity} onRemoveItem={handleRemoveFromCart} onNavigate={handleNavigate} />;
       case 'profile':
-        return <ProfilePage />;
+        return <ProfilePage userProfile={userProfile} />;
       case 'search':
         return <SearchPage {...pageProps} />;
        case 'checkout':
