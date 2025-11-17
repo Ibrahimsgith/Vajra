@@ -14,7 +14,7 @@ import { CheckoutPage } from './components/CheckoutPage';
 import { OrderConfirmationPage } from './components/OrderConfirmationPage';
 import { ProductDetailPage } from './components/ProductDetailPage';
 import { GuestLoginPage } from './components/GuestLoginPage';
-import { Page, Product, CartItem, ShippingInfo, Order, UserProfile, OrderStatus } from './types';
+import { Page, Product, CartItem, ShippingInfo, Order, UserProfile } from './types';
 import { FAQPage } from './components/FAQPage';
 import { BestsellerPage } from './components/BestsellerPage';
 import { NewArrivalsPage } from './components/NewArrivalsPage';
@@ -30,94 +30,6 @@ import { CollectionsPage } from './components/CollectionsPage';
 import { productsData } from './constants';
 import { createOrder } from './services/orderService';
 import { fetchProducts } from './services/productService';
-import { OrdersPage } from './components/OrdersPage';
-
-const buildSampleOrders = (catalog: Product[]): Order[] => {
-  if (catalog.length === 0) {
-    return [];
-  }
-
-  const [first, second = catalog[0], third = catalog[0]] = catalog;
-
-  const summarize = (items: CartItem[]) => {
-    const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const taxes = parseFloat((subtotal * 0.08).toFixed(2));
-    const shipping = subtotal > 500 ? 0 : 25;
-    const total = parseFloat((subtotal + taxes + shipping).toFixed(2));
-    return { subtotal, taxes, shipping, total };
-  };
-
-  const primaryItems: CartItem[] = [
-    { ...first, quantity: 1 },
-    { ...second, quantity: 2 },
-  ];
-  const secondItems: CartItem[] = [{ ...third, quantity: 1 }];
-  const thirdItems: CartItem[] = [{ ...second, quantity: 3 }];
-
-  const firstTotals = summarize(primaryItems);
-  const secondTotals = summarize(secondItems);
-  const thirdTotals = summarize(thirdItems);
-
-  return [
-    {
-      orderNumber: 'VAJ-1045',
-      items: primaryItems,
-      shippingInfo: {
-        firstName: 'Aarav',
-        lastName: 'Patel',
-        email: 'aarav.patel@example.com',
-        phone: '+91 98765 43210',
-        address: '12, Ambedkar Road',
-        city: 'Mumbai',
-        zipCode: '400001',
-        country: 'India',
-        fullName: 'Aarav Patel',
-      },
-      paymentMethod: 'UPI',
-      createdAt: '2024-06-03T10:30:00Z',
-      status: 'processing',
-      ...firstTotals,
-    },
-    {
-      orderNumber: 'VAJ-1044',
-      items: secondItems,
-      shippingInfo: {
-        firstName: 'Meera',
-        lastName: 'Singh',
-        email: 'meera.singh@example.com',
-        phone: '+91 90210 12345',
-        address: '221B Residency Lane',
-        city: 'Bengaluru',
-        zipCode: '560001',
-        country: 'India',
-        fullName: 'Meera Singh',
-      },
-      paymentMethod: 'Net Banking',
-      createdAt: '2024-05-28T14:15:00Z',
-      status: 'shipped',
-      ...secondTotals,
-    },
-    {
-      orderNumber: 'VAJ-1043',
-      items: thirdItems,
-      shippingInfo: {
-        firstName: 'Kabir',
-        lastName: 'Gupta',
-        email: 'kabir.gupta@example.com',
-        phone: '+91 90000 22211',
-        address: '18, Lotus Enclave',
-        city: 'Delhi',
-        zipCode: '110001',
-        country: 'India',
-        fullName: 'Kabir Gupta',
-      },
-      paymentMethod: 'Credit Card',
-      createdAt: '2024-05-20T09:45:00Z',
-      status: 'delivered',
-      ...thirdTotals,
-    },
-  ];
-};
 
 const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -126,7 +38,6 @@ const App: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [wishlistItems, setWishlistItems] = useState<number[]>([]); // Array of product IDs
   const [orderDetails, setOrderDetails] = useState<Order | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [isGuestLoggedIn, setIsGuestLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -167,12 +78,6 @@ const App: React.FC = () => {
       isMounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (products.length > 0 && orders.length === 0) {
-      setOrders(buildSampleOrders(products));
-    }
-  }, [orders.length, products]);
 
   const handleAddToCart = (productToAdd: Product) => {
     setCartItems(prevItems => {
@@ -222,13 +127,7 @@ const App: React.FC = () => {
         fullName: `${shippingInfo.firstName} ${shippingInfo.lastName}`.trim(),
       };
       const order = await createOrder(cartItems, shippingPayload, paymentMethod);
-      const orderWithMeta: Order = {
-        ...order,
-        status: order.status ?? 'processing',
-        createdAt: order.createdAt ?? new Date().toISOString(),
-      };
-      setOrderDetails(orderWithMeta);
-      setOrders(prevOrders => [orderWithMeta, ...prevOrders]);
+      setOrderDetails(order);
       setCartItems([]);
       setCurrentPage('orderConfirmation');
       window.scrollTo(0, 0);
@@ -258,18 +157,6 @@ const App: React.FC = () => {
     setIsGuestLoggedIn(true);
     setCurrentPage('profile');
     window.scrollTo(0, 0);
-  };
-
-  const handleUpdateOrderStatus = (orderNumber: string, status: OrderStatus) => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.orderNumber === orderNumber
-          ? { ...order, status }
-          : order
-      )
-    );
-
-    setOrderDetails(prev => (prev?.orderNumber === orderNumber ? { ...prev, status } : prev));
   };
 
   const wishlistedProducts = products.filter(p => wishlistItems.includes(p.id));
@@ -323,8 +210,6 @@ const App: React.FC = () => {
         return <CheckoutPage cartItems={cartItems} onPlaceOrder={handlePlaceOrder} onNavigate={handleNavigate} />;
       case 'orderConfirmation':
         return <OrderConfirmationPage order={orderDetails} onNavigate={handleNavigate} />;
-      case 'orders':
-        return <OrdersPage orders={orders} onUpdateStatus={handleUpdateOrderStatus} onNavigate={handleNavigate} />;
       case 'productDetail':
         return selectedProduct ? <ProductDetailPage product={selectedProduct} {...pageProps} /> : <HomePage onNavigate={handleNavigate} />;
       case 'guestLogin':
