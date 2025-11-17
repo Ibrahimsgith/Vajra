@@ -1,4 +1,4 @@
-import { CartItem, Order, OrderStatus, ShippingInfo } from '../types';
+import { CartItem, Order, ShippingInfo } from '../types';
 import { buildApiUrl } from './apiConfig';
 
 interface OrderResponse extends Partial<Order> {
@@ -60,6 +60,5 @@ export async function createOrder(
     total: data.total ?? totalFallback,
     paymentMethod: data.paymentMethod ?? paymentMethod,
     createdAt: data.createdAt,
-    status: (data.status as OrderStatus | undefined) ?? 'processing',
   };
 }
