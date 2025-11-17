@@ -19,8 +19,6 @@ export interface UserProfile {
   phone?: string;
 }
 
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-
 export interface StyleAdvice {
   jewelryType: string;
   metal: string;
@@ -50,30 +48,6 @@ export interface Order {
   shipping?: number;
   paymentMethod?: string;
   createdAt?: string;
-  status?: OrderStatus;
 }
 
-export type Page =
-  | 'home'
-  | 'about'
-  | 'wishlist'
-  | 'cart'
-  | 'profile'
-  | 'search'
-  | 'checkout'
-  | 'orderConfirmation'
-  | 'productDetail'
-  | 'guestLogin'
-  | 'adminLogin'
-  | 'faq'
-  | 'bestseller'
-  | 'newarrivals'
-  | 'combos'
-  | 'gifting'
-  | 'collections'
-  | 'rings'
-  | 'necklaces'
-  | 'bracelets'
-  | 'earrings'
-  | 'anklets'
-  | 'antiques';
+export type Page = 'home' | 'about' | 'wishlist' | 'cart' | 'profile' | 'search' | 'checkout' | 'orderConfirmation' | 'productDetail' | 'guestLogin' | 'faq' | 'bestseller' | 'newarrivals' | 'combos' | 'gifting' | 'collections' | 'rings' | 'necklaces' | 'bracelets' | 'earrings' | 'anklets' | 'antiques';
